@@ -1,0 +1,105 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
+import { useGame } from "@/store/game";
+import { SudokuBoard } from "@/components/sudoku-board";
+import { NumberPad } from "@/components/number-pad";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
+import { scoreFor } from "@/lib/sudoku";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/game")({
+  component: GamePage,
+  head: () => ({
+    meta: [{ title: "数独 — Play" }, { name: "description", content: "Play sudoku." }],
+  }),
+});
+
+function fmt(s: number) {
+  const m = Math.floor(s / 60).toString().padStart(2, "0");
+  const ss = (s % 60).toString().padStart(2, "0");
+  return `${m}:${ss}`;
+}
+
+function GamePage() {
+  const { status, elapsed, mistakes, difficulty, tick, newGame } = useGame();
+  const { user } = useAuth();
+  const submitted = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [tick]);
+
+  useEffect(() => {
+    if (status === "won" && !submitted.current) {
+      submitted.current = true;
+      const points = scoreFor(difficulty, elapsed, mistakes);
+      toast.success(`完成 — ${points} points`, {
+        description: `${fmt(elapsed)} · ${mistakes} mistakes`,
+      });
+      if (user) {
+        supabase
+          .from("completed_games")
+          .insert({
+            user_id: user.id,
+            difficulty,
+            seconds: elapsed,
+            mistakes,
+            points,
+          })
+          .then(({ error }) => {
+            if (error) console.error("save failed", error);
+          });
+      }
+    }
+    if (status === "playing") submitted.current = false;
+  }, [status, elapsed, mistakes, difficulty, user]);
+
+  if (status === "idle") {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center">
+        <p className="text-muted-foreground">No game in progress.</p>
+        <Link to="/" className="mt-4 inline-block">
+          <Button>Start a game</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-6 text-sm">
+            <div><span className="text-muted-foreground">Level</span> <span className="font-display text-vermillion ml-1">{difficulty}</span></div>
+            <div><span className="text-muted-foreground">Time</span> <span className="ml-1 font-mono">{fmt(elapsed)}</span></div>
+            <div><span className="text-muted-foreground">Mistakes</span> <span className="ml-1 font-mono">{mistakes}</span></div>
+          </div>
+          <SudokuBoard />
+          <NumberPad />
+        </div>
+        <Card className="p-6 bg-paper min-w-[200px]">
+          <h2 className="font-display text-xl text-ink mb-3">Controls</h2>
+          <ul className="text-xs text-muted-foreground space-y-1">
+            <li>1–9 to enter a number</li>
+            <li>0 / Del to erase</li>
+            <li>Arrow keys to move</li>
+          </ul>
+          <div className="mt-6 flex flex-col gap-2">
+            <Button variant="outline" size="sm" onClick={() => newGame(difficulty)}>New {difficulty}</Button>
+            <Link to="/"><Button variant="ghost" size="sm" className="w-full">Change level</Button></Link>
+          </div>
+          {status === "won" && (
+            <div className="mt-6 text-center">
+              <div className="font-display text-2xl text-vermillion">完成</div>
+              <div className="text-xs text-muted-foreground mt-1">Complete!</div>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
