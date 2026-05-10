@@ -6,8 +6,9 @@ import {
   emptyBoard,
   findConflicts,
   generatePuzzle,
-  isComplete,
 } from "@/lib/sudoku";
+
+export type SubmitResult = "win" | "incomplete" | "wrong";
 
 interface GameState {
   difficulty: Difficulty;
@@ -19,6 +20,9 @@ interface GameState {
   startedAt: number | null;
   elapsed: number;
   mistakes: number;
+  failedSubmits: number;
+  hintsUsed: number;
+  hintedCells: { r: number; c: number }[];
   noteMode: boolean;
   status: "idle" | "playing" | "won";
   newGame: (d: Difficulty) => void;
@@ -27,6 +31,8 @@ interface GameState {
   toggleNoteMode: () => void;
   tick: () => void;
   reset: () => void;
+  submit: () => SubmitResult;
+  requestHint: () => boolean;
   getConflicts: () => boolean[][];
 }
 
@@ -45,6 +51,9 @@ export const useGame = create<GameState>()(
       startedAt: null,
       elapsed: 0,
       mistakes: 0,
+      failedSubmits: 0,
+      hintsUsed: 0,
+      hintedCells: [],
       noteMode: false,
       status: "idle",
       newGame: (d) => {
@@ -59,6 +68,9 @@ export const useGame = create<GameState>()(
           startedAt: Date.now(),
           elapsed: 0,
           mistakes: 0,
+          failedSubmits: 0,
+          hintsUsed: 0,
+          hintedCells: [],
           status: "playing",
         });
       },
@@ -84,12 +96,10 @@ export const useGame = create<GameState>()(
         nn[r][c] = [];
         let m = mistakes;
         if (n !== 0 && solution[r][c] !== n) m++;
-        const won = isComplete(nb);
         set({
           current: nb,
           notes: nn,
           mistakes: m,
-          status: won ? "won" : "playing",
         });
       },
       tick: () => {
@@ -107,8 +117,49 @@ export const useGame = create<GameState>()(
           startedAt: null,
           elapsed: 0,
           mistakes: 0,
+          failedSubmits: 0,
+          hintsUsed: 0,
+          hintedCells: [],
           status: "idle",
         }),
+      submit: () => {
+        const { current, solution, failedSubmits } = get();
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (current[r][c] === 0) return "incomplete";
+          }
+        }
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (current[r][c] !== solution[r][c]) {
+              set({ failedSubmits: failedSubmits + 1 });
+              return "wrong";
+            }
+          }
+        }
+        set({ status: "won" });
+        return "win";
+      },
+      requestHint: () => {
+        const { current, solution, hintedCells, hintsUsed } = get();
+        if (hintsUsed >= 3) return false;
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (
+              current[r][c] !== 0 &&
+              current[r][c] !== solution[r][c] &&
+              !hintedCells.some((h) => h.r === r && h.c === c)
+            ) {
+              set({
+                hintedCells: [...hintedCells, { r, c }],
+                hintsUsed: hintsUsed + 1,
+              });
+              return true;
+            }
+          }
+        }
+        return false;
+      },
       getConflicts: () => findConflicts(get().current),
     }),
     { name: "sudoku-game" },

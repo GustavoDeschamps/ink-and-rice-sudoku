@@ -15,6 +15,7 @@ interface CompletedGame {
   difficulty: string;
   seconds: number;
   mistakes: number;
+  failed_submits: number;
   points: number;
   created_at: string;
 }
@@ -75,6 +76,7 @@ function ProfilePage() {
               <div className="font-display text-vermillion capitalize">{g.difficulty}</div>
               <div className="text-xs text-muted-foreground">
                 {Math.floor(g.seconds / 60)}m {g.seconds % 60}s · {g.mistakes} mistakes
+                {g.failed_submits > 0 && ` · ${g.failed_submits} failed submit${g.failed_submits === 1 ? "" : "s"}`}
               </div>
             </div>
             <div className="font-mono text-gold">+{g.points}</div>

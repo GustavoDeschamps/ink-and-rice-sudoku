@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as GameRouteImport } from './routes/game'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -24,6 +25,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GameRoute = GameRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/friends': typeof FriendsRoute
   '/game': typeof GameRoute
+  '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/profile': typeof ProfileRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/friends': typeof FriendsRoute
   '/game': typeof GameRoute
+  '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/profile': typeof ProfileRoute
 }
@@ -69,20 +77,36 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/friends': typeof FriendsRoute
   '/game': typeof GameRoute
+  '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/friends' | '/game' | '/leaderboard' | '/profile'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/friends'
+    | '/game'
+    | '/history'
+    | '/leaderboard'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/friends' | '/game' | '/leaderboard' | '/profile'
+  to:
+    | '/'
+    | '/auth'
+    | '/friends'
+    | '/game'
+    | '/history'
+    | '/leaderboard'
+    | '/profile'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/friends'
     | '/game'
+    | '/history'
     | '/leaderboard'
     | '/profile'
   fileRoutesById: FileRoutesById
@@ -92,6 +116,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FriendsRoute: typeof FriendsRoute
   GameRoute: typeof GameRoute
+  HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
   ProfileRoute: typeof ProfileRoute
 }
@@ -110,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/game': {
@@ -148,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FriendsRoute: FriendsRoute,
   GameRoute: GameRoute,
+  HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
   ProfileRoute: ProfileRoute,
 }

@@ -3,7 +3,18 @@ import { useGame } from "@/store/game";
 import { cn } from "@/lib/utils";
 
 export function SudokuBoard() {
-  const { current, puzzle, notes, selected, select, getConflicts, status, difficulty } = useGame();
+  const {
+    current,
+    puzzle,
+    notes,
+    selected,
+    select,
+    getConflicts,
+    status,
+    difficulty,
+    hintedCells,
+    solution,
+  } = useGame();
   const showConflicts = difficulty === "easy" || status === "won";
   const conflicts = useMemo(
     () => (showConflicts ? getConflicts() : null),
@@ -40,6 +51,11 @@ export function SudokuBoard() {
                   Math.floor(selected.c / 3) === Math.floor(c / 3)));
             const sameVal = val !== 0 && val === selVal && !isSel;
             const conflict = conflicts?.[r][c] ?? false;
+            const hintWrong =
+              difficulty === "medium" &&
+              hintedCells.some((h) => h.r === r && h.c === c) &&
+              val !== 0 &&
+              val !== solution[r][c];
             return (
               <button
                 key={`${r}-${c}`}
@@ -55,7 +71,7 @@ export function SudokuBoard() {
                   sameVal && "bg-gold/25",
                   isSel && "bg-vermillion/20 ring-2 ring-vermillion ring-inset z-10",
                   given ? "font-semibold text-ink" : "text-vermillion",
-                  conflict && "text-destructive bg-destructive/10",
+                  (conflict || hintWrong) && "text-destructive bg-destructive/10",
                 )}
               >
                 {val !== 0 ? (

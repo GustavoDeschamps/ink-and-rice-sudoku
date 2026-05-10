@@ -25,6 +25,9 @@ export function AppShell() {
                 <Link to="/friends" className="px-3 py-1.5 hover:text-vermillion" activeProps={{ className: "px-3 py-1.5 text-vermillion font-medium" }}>
                   Friends
                 </Link>
+                <Link to="/history" className="px-3 py-1.5 hover:text-vermillion" activeProps={{ className: "px-3 py-1.5 text-vermillion font-medium" }}>
+                  History
+                </Link>
                 <Link to="/profile" className="px-3 py-1.5 hover:text-vermillion" activeProps={{ className: "px-3 py-1.5 text-vermillion font-medium" }}>
                   Profile
                 </Link>

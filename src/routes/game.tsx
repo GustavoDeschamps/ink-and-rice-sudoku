@@ -27,10 +27,36 @@ function fmt(s: number) {
 }
 
 function GamePage() {
-  const { status, elapsed, mistakes, difficulty, tick, newGame } = useGame();
+  const {
+    status,
+    elapsed,
+    mistakes,
+    failedSubmits,
+    hintsUsed,
+    difficulty,
+    tick,
+    newGame,
+    submit,
+    requestHint,
+  } = useGame();
   const { user } = useAuth();
   const submitted = useRef(false);
   const [showTimer, setShowTimer] = useState(true);
+
+  const onSubmit = () => {
+    const result = submit();
+    if (result === "incomplete") {
+      toast("Fill in all cells first.");
+    } else if (result === "wrong") {
+      toast.error("Something is wrong.");
+    }
+  };
+
+  const onHint = () => {
+    if (hintsUsed >= 3) return;
+    const ok = requestHint();
+    if (!ok) toast("Nothing wrong on the board.");
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem(TIMER_PREF_KEY);
@@ -54,9 +80,11 @@ function GamePage() {
     if (status === "won" && !submitted.current) {
       submitted.current = true;
       const points = scoreFor(difficulty, elapsed, mistakes);
-      toast.success(`完成 — ${points} points`, {
-        description: `${fmt(elapsed)} · ${mistakes} mistakes`,
-      });
+      const desc =
+        failedSubmits > 0
+          ? `${fmt(elapsed)} · ${mistakes} mistakes · ${failedSubmits} failed submit${failedSubmits === 1 ? "" : "s"}`
+          : `${fmt(elapsed)} · ${mistakes} mistakes`;
+      toast.success(`完成 — ${points} points`, { description: desc });
       if (user) {
         supabase
           .from("completed_games")
@@ -65,6 +93,7 @@ function GamePage() {
             difficulty,
             seconds: elapsed,
             mistakes,
+            failed_submits: failedSubmits,
             points,
           })
           .then(({ error }) => {
@@ -73,7 +102,7 @@ function GamePage() {
       }
     }
     if (status === "playing") submitted.current = false;
-  }, [status, elapsed, mistakes, difficulty, user]);
+  }, [status, elapsed, mistakes, failedSubmits, difficulty, user]);
 
   if (status === "idle") {
     return (
@@ -120,6 +149,25 @@ function GamePage() {
             <li>Arrow keys to move</li>
           </ul>
           <div className="mt-6 flex flex-col gap-2">
+            {status === "playing" && (
+              <Button
+                size="sm"
+                onClick={onSubmit}
+                className="bg-vermillion hover:bg-vermillion/90"
+              >
+                Submit
+              </Button>
+            )}
+            {status === "playing" && difficulty === "medium" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onHint}
+                disabled={hintsUsed >= 3}
+              >
+                Hint ({hintsUsed} / 3)
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => newGame(difficulty)}>New {difficulty}</Button>
             <Link to="/"><Button variant="ghost" size="sm" className="w-full">Change level</Button></Link>
           </div>
@@ -130,6 +178,13 @@ function GamePage() {
               <div className="mt-3 text-sm">
                 <span className="text-muted-foreground">Mistakes</span>{" "}
                 <span className="font-mono">{mistakes}</span>
+                {failedSubmits > 0 && (
+                  <>
+                    {" · "}
+                    <span className="text-muted-foreground">Failed submits</span>{" "}
+                    <span className="font-mono">{failedSubmits}</span>
+                  </>
+                )}
               </div>
             </div>
           )}
