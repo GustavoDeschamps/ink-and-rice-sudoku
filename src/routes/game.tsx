@@ -105,7 +105,7 @@ function GamePage() {
                 {showTimer ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               </button>
             </div>
-            {status === "won" && (
+            {(difficulty === "easy" || status === "won") && (
               <div><span className="text-muted-foreground">Mistakes</span> <span className="ml-1 font-mono">{mistakes}</span></div>
             )}
           </div>

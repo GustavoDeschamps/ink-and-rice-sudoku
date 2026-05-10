@@ -3,8 +3,8 @@ import { useGame } from "@/store/game";
 import { cn } from "@/lib/utils";
 
 export function SudokuBoard() {
-  const { current, puzzle, notes, selected, select, getConflicts, status } = useGame();
-  const showConflicts = status === "won";
+  const { current, puzzle, notes, selected, select, getConflicts, status, difficulty } = useGame();
+  const showConflicts = difficulty === "easy" || status === "won";
   const conflicts = useMemo(
     () => (showConflicts ? getConflicts() : null),
     [current, getConflicts, showConflicts],
