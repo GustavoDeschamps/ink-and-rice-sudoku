@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      // GitHub Pages returns 404 for deep links in SPAs.
+      // Redirect to index.html, passing the original path as ?p=
+      var base = "/ink-and-rice-sudoku";
+      var path = window.location.pathname.replace(base, "") || "/";
+      var search = window.location.search;
+      var hash = window.location.hash;
+      window.location.replace(base + "/?p=" + encodeURIComponent(path + search) + hash);
+    </script>
+  </head>
+</html>
