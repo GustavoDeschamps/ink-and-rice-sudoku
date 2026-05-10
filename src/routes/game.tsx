@@ -148,6 +148,14 @@ function GamePage() {
             <li>0 / Del to erase</li>
             <li>Arrow keys to move</li>
           </ul>
+          {difficulty === "expert" && (
+            <div className="mt-4 p-3 rounded bg-vermillion/5 border border-vermillion/20">
+              <div className="font-display text-sm text-vermillion">X-Sudoku</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Both diagonals must also contain 1–9.
+              </div>
+            </div>
+          )}
           <div className="mt-6 flex flex-col gap-2">
             {status === "playing" && (
               <Button

@@ -50,6 +50,11 @@ function Home() {
           >
             <div className="font-display text-3xl text-vermillion group-hover:scale-105 transition">{l.jp}</div>
             <div className="mt-2 text-sm uppercase tracking-widest text-muted-foreground">{l.en}</div>
+            {l.d === "expert" && (
+              <div className="mt-2 text-[10px] uppercase tracking-wider text-gold">
+                X-Sudoku · diagonals
+              </div>
+            )}
           </Card>
         ))}
       </section>

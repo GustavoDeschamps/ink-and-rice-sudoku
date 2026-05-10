@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useGame } from "@/store/game";
+import { isOnDiagonal } from "@/lib/sudoku";
 import { cn } from "@/lib/utils";
 
 export function SudokuBoard() {
@@ -56,6 +57,7 @@ export function SudokuBoard() {
               hintedCells.some((h) => h.r === r && h.c === c) &&
               val !== 0 &&
               val !== solution[r][c];
+            const onDiag = difficulty === "expert" && isOnDiagonal(r, c);
             return (
               <button
                 key={`${r}-${c}`}
@@ -67,6 +69,7 @@ export function SudokuBoard() {
                   r % 3 === 0 && "border-t-ink/70 border-t-2",
                   c === 8 && "border-r-ink/70 border-r-2",
                   r === 8 && "border-b-ink/70 border-b-2",
+                  onDiag && "bg-vermillion/5",
                   sameRowCol && "bg-gold/10",
                   sameVal && "bg-gold/25",
                   isSel && "bg-vermillion/20 ring-2 ring-vermillion ring-inset z-10",

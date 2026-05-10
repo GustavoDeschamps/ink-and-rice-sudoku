@@ -160,7 +160,7 @@ export const useGame = create<GameState>()(
         }
         return false;
       },
-      getConflicts: () => findConflicts(get().current),
+      getConflicts: () => findConflicts(get().current, get().difficulty === "expert"),
     }),
     { name: "sudoku-game" },
   ),
