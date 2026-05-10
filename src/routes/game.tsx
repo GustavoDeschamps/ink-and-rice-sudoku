@@ -105,7 +105,9 @@ function GamePage() {
                 {showTimer ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               </button>
             </div>
-            <div><span className="text-muted-foreground">Mistakes</span> <span className="ml-1 font-mono">{mistakes}</span></div>
+            {status === "won" && (
+              <div><span className="text-muted-foreground">Mistakes</span> <span className="ml-1 font-mono">{mistakes}</span></div>
+            )}
           </div>
           <SudokuBoard />
           <NumberPad />
@@ -125,6 +127,10 @@ function GamePage() {
             <div className="mt-6 text-center">
               <div className="font-display text-2xl text-vermillion">完成</div>
               <div className="text-xs text-muted-foreground mt-1">Complete!</div>
+              <div className="mt-3 text-sm">
+                <span className="text-muted-foreground">Mistakes</span>{" "}
+                <span className="font-mono">{mistakes}</span>
+              </div>
             </div>
           )}
         </Card>

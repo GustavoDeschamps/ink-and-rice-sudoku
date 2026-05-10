@@ -3,8 +3,12 @@ import { useGame } from "@/store/game";
 import { cn } from "@/lib/utils";
 
 export function SudokuBoard() {
-  const { current, puzzle, notes, selected, select, getConflicts } = useGame();
-  const conflicts = useMemo(() => getConflicts(), [current, getConflicts]);
+  const { current, puzzle, notes, selected, select, getConflicts, status } = useGame();
+  const showConflicts = status === "won";
+  const conflicts = useMemo(
+    () => (showConflicts ? getConflicts() : null),
+    [current, getConflicts, showConflicts],
+  );
   const selVal = selected ? current[selected.r][selected.c] : 0;
 
   useEffect(() => {
@@ -35,7 +39,7 @@ export function SudokuBoard() {
                 (Math.floor(selected.r / 3) === Math.floor(r / 3) &&
                   Math.floor(selected.c / 3) === Math.floor(c / 3)));
             const sameVal = val !== 0 && val === selVal && !isSel;
-            const conflict = conflicts[r][c];
+            const conflict = conflicts?.[r][c] ?? false;
             return (
               <button
                 key={`${r}-${c}`}
