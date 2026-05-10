@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useGame } from "@/store/game";
 import { SudokuBoard } from "@/components/sudoku-board";
 import { NumberPad } from "@/components/number-pad";
@@ -9,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { scoreFor } from "@/lib/sudoku";
 import { toast } from "sonner";
+
+const TIMER_PREF_KEY = "sudoku.showTimer";
 
 export const Route = createFileRoute("/game")({
   component: GamePage,
@@ -27,6 +30,20 @@ function GamePage() {
   const { status, elapsed, mistakes, difficulty, tick, newGame } = useGame();
   const { user } = useAuth();
   const submitted = useRef(false);
+  const [showTimer, setShowTimer] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(TIMER_PREF_KEY);
+    if (stored !== null) setShowTimer(stored === "true");
+  }, []);
+
+  const toggleTimer = () => {
+    setShowTimer((prev) => {
+      const next = !prev;
+      localStorage.setItem(TIMER_PREF_KEY, String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const id = setInterval(tick, 1000);
@@ -73,9 +90,21 @@ function GamePage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="flex gap-6 text-sm">
+          <div className="flex gap-6 text-sm items-center">
             <div><span className="text-muted-foreground">Level</span> <span className="font-display text-vermillion ml-1">{difficulty}</span></div>
-            <div><span className="text-muted-foreground">Time</span> <span className="ml-1 font-mono">{fmt(elapsed)}</span></div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Time</span>
+              <span className="font-mono">{showTimer ? fmt(elapsed) : "—:—"}</span>
+              <button
+                type="button"
+                onClick={toggleTimer}
+                aria-label={showTimer ? "Hide timer" : "Show timer"}
+                title={showTimer ? "Hide timer" : "Show timer"}
+                className="cursor-pointer text-muted-foreground hover:text-vermillion transition-colors"
+              >
+                {showTimer ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+              </button>
+            </div>
             <div><span className="text-muted-foreground">Mistakes</span> <span className="ml-1 font-mono">{mistakes}</span></div>
           </div>
           <SudokuBoard />

@@ -36,18 +36,12 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin, data: { username } },
         });
         if (error) throw error;
-        if (data.user) {
-          await supabase.from("profiles").upsert({
-            id: data.user.id,
-            username: username || email.split("@")[0],
-          });
-        }
         toast.success("Welcome — check your email to confirm.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -91,8 +85,9 @@ function AuthPage() {
           </Button>
         </form>
         <button
+          type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 w-full text-sm text-muted-foreground hover:text-vermillion"
+          className="mt-4 w-full cursor-pointer text-sm text-muted-foreground hover:text-vermillion"
         >
           {mode === "signin" ? "No account? Sign up" : "Have an account? Sign in"}
         </button>
