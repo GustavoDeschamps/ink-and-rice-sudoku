@@ -21,6 +21,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   if (user) {
     return (
@@ -36,13 +37,18 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin, data: { username } },
         });
         if (error) throw error;
-        toast.success("Welcome — check your email to confirm.");
+        if (data.session) {
+          toast.success("Welcome!");
+          navigate({ to: "/profile" });
+        } else {
+          setPendingEmail(email);
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -55,6 +61,32 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
+  if (pendingEmail) {
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-md">
+        <Card className="p-8 bg-paper text-center">
+          <h1 className="font-display text-3xl text-vermillion">確認</h1>
+          <p className="text-sm text-muted-foreground mt-1">Confirm your email</p>
+          <p className="mt-6 text-sm">
+            We sent a confirmation link to <span className="font-medium">{pendingEmail}</span>.
+            Click it to activate your account, then come back and sign in.
+          </p>
+          <Button
+            type="button"
+            onClick={() => {
+              setPendingEmail(null);
+              setMode("signin");
+              setPassword("");
+            }}
+            className="mt-6 w-full bg-vermillion hover:bg-vermillion/90"
+          >
+            Back to sign in
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-md">
