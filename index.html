@@ -16,7 +16,8 @@
       (function () {
         var redirect = new URLSearchParams(window.location.search).get("p");
         if (redirect) {
-          window.history.replaceState(null, "", redirect + window.location.hash);
+          var base = "/ink-and-rice-sudoku";
+          window.history.replaceState(null, "", base + redirect + window.location.hash);
         }
       })();
     </script>
