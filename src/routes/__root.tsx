@@ -22,19 +22,40 @@ function NotFoundComponent() {
   );
 }
 
+function isChunkLoadError(error: Error) {
+  const msg = error.message ?? "";
+  return (
+    msg.includes("Failed to fetch dynamically imported module") ||
+    msg.includes("Importing a module script failed") ||
+    /Loading chunk \S+ failed/.test(msg)
+  );
+}
+
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const chunkError = isChunkLoadError(error);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-2xl text-foreground">Something broke</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {chunkError
+            ? "A new version of the site is available. Reload to get it."
+            : error.message}
+        </p>
         <button
-          onClick={() => { router.invalidate(); reset(); }}
+          onClick={() => {
+            if (chunkError) {
+              window.location.reload();
+            } else {
+              router.invalidate();
+              reset();
+            }
+          }}
           className="mt-6 rounded-sm bg-vermillion px-4 py-2 text-sm text-primary-foreground"
         >
-          Try again
+          {chunkError ? "Reload" : "Try again"}
         </button>
       </div>
     </div>
